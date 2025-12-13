@@ -1,9 +1,10 @@
 {
   "name": "moodle-mcp-server",
-  "version": "0.1.0",
-  "description": "Moddle MCP server",
+  "version": "0.4.0",
+  "description": "Serveur MCP pour interagir avec l'API Moodle",
   "private": true,
   "type": "module",
+  "main": "build/index.js",
   "bin": {
     "moodle-mcp-server": "./build/index.js"
   },
@@ -11,19 +12,35 @@
     "build"
   ],
   "scripts": {
-    "build": "tsc && node -e \"require('fs').chmodSync('build/index.js', '755')\"",
+    "build": "tsc && chmod +x build/index.js",
     "prepare": "npm run build",
     "watch": "tsc --watch",
+    "start": "node build/index.js",
+    "dev": "ts-node --esm src/index.ts",
     "inspector": "npx @modelcontextprotocol/inspector build/index.js",
-    "start": "node --require dotenv/config build/index.js"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "keywords": [
+    "moodle",
+    "mcp",
+    "api",
+    "typescript"
+  ],
+  "author": "Sergio",
+  "license": "MIT",
   "dependencies": {
-    "@modelcontextprotocol/sdk": "0.6.0",
-    "axios": "^1.8.2",
-    "dotenv": "^16.6.1"
+    "@modelcontextprotocol/sdk": "^1.24.3",
+    "axios": "^1.7.7",
+    "dotenv": "^16.6.1",
+    "form-data": "^4.0.0",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
-    "@types/node": "^20.11.24",
-    "typescript": "^5.3.3"
+    "@types/node": "^20.17.11",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }

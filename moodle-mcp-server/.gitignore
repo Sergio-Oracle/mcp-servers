@@ -2,3 +2,22 @@ node_modules/
 build/
 *.log
 .env*node_modules/
+
+# Fichiers de backup
+*.backup
+*.old
+*_backup/
+README_backup.md
+
+# Fichiers temporaires
+*.tmp
+
+# Build
+build/
+
+# Environment
+.env
+
+# Node
+node_modules/
+node_modules1/

@@ -1,363 +1,319 @@
-# Moodle MCP Server - Version Étendue
+# Moodle MCP Server - Serveur MCP pour Moodle LMS
 
-Un serveur MCP (Model Context Protocol) qui permet aux LLMs d'interagir avec la plateforme Moodle pour gérer les cours, étudiants, devoirs, quiz, fichiers et ressources pédagogiques. Cette version étendue inclut des fonctionnalités avancées pour la correction automatique d'examens et la gestion complète du contenu des cours.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)](https://nodejs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue)](https://www.typescriptlang.org/)
 
-## 🚀 Nouvelles Fonctionnalités (v0.2.0)
+Serveur MCP (Model Context Protocol) étendu pour intégrer Moodle LMS avec Claude Desktop, permettant la gestion automatisée de cours, la correction de devoirs assistée par IA, et bien plus encore.
 
-### 📚 Gestion du Contenu du Cours
-- `get_course_contents` - Récupère le contenu complet du cours avec toutes les sections et modules
-- `get_course_modules` - Liste tous les modules (activités et ressources) avec filtrage par type
-- `get_section_contents` - Obtient le contenu détaillé d'une section spécifique
+## 🚀 Fonctionnalités Principales
 
-### 📁 Gestion des Fichiers et Ressources
-- `get_course_files` - Liste tous les fichiers du cours (PDFs, documents, présentations)
-- `download_file` - Télécharge un fichier spécifique depuis Moodle
-- `search_files` - Recherche de fichiers par nom ou extension
-- `get_module_details` - Informations détaillées sur un module spécifique
+### 📚 Gestion de Cours
+- Liste des catégories et cours
+- Contenu détaillé des cours (sections, modules, ressources)
+- Gestion des étudiants inscrits
+- Accès aux détails des modules et sections
 
-### ✅ Correction Automatique d'Examens
-- `get_all_submissions_with_files` - Récupère toutes les soumissions avec fichiers pour correction
-- `batch_provide_feedback` - Fournit feedback et notes à plusieurs étudiants simultanément
-- `generate_grades_report` - Génère des rapports de notes (JSON, CSV, Markdown)
+### 📝 Devoirs et Évaluations
+- Récupération des devoirs et soumissions
+- Lecture du contenu des rendus étudiants
+- Feedback et notation automatisés
+- Correction en masse avec IA
+- Génération de rapports de notes (CSV, JSON, Markdown)
 
-## 📋 Fonctionnalités Existantes
+### 📁 Gestion de Fichiers
+- Liste et recherche de fichiers
+- Téléchargement de ressources
+- Filtrage par type (PDF, DOCX, PPTX, etc.)
+- Accès aux fichiers joints aux soumissions
 
-### Gestion des Étudiants
-- `get_students` - Liste des étudiants inscrits au cours
+### 🎯 Quiz et Évaluations
+- Liste des quiz disponibles
+- Consultation des notes des étudiants
+- Statistiques de performance
 
-### Gestion des Devoirs
-- `get_assignments` - Liste de tous les devoirs
-- `get_submissions` - Soumissions des étudiants
-- `get_submission_content` - Contenu détaillé d'une soumission
-- `provide_feedback` - Fournir feedback et note à un étudiant
+### 🤖 Correction Automatique Assistée par IA
+- Récupération en masse des soumissions avec fichiers
+- Analyse automatique du contenu
+- Génération de feedbacks personnalisés
+- Attribution de notes avec justification
+- Publication automatique des corrections
 
-### Gestion des Quiz
-- `get_quizzes` - Liste de tous les quiz
-- `get_quiz_grade` - Note d'un étudiant sur un quiz
+## 🌐 Architecture Réseau
 
-## 🎯 Cas d'Usage Principal
+Ce serveur peut fonctionner en deux modes :
 
-Ce serveur est conçu pour faciliter le workflow suivant :
+1. **Mode Local (stdio)** : Communication directe sur la même machine
+2. **Mode Réseau (TCP/IP)** : Accessible depuis n'importe quelle machine du réseau via `socat`
 
-1. **L'enseignant dépose un sujet d'examen** sur Moodle (fichier PDF, DOCX, etc.)
-2. **Les étudiants téléchargent le sujet** et rédigent leurs copies
-3. **Les étudiants déposent leurs copies** sur Moodle (fichiers ou texte en ligne)
-4. **Claude récupère toutes les copies** via `get_all_submissions_with_files`
-5. **Claude corrige automatiquement** en analysant les réponses
-6. **Claude fournit les notes et feedbacks** via `batch_provide_feedback`
-7. **Claude génère un rapport** via `generate_grades_report`
-
-## 🛠️ Installation
-
-### Prérequis
-
-- Node.js (v14 ou supérieur)
-- Token API Moodle avec permissions appropriées
-- ID du cours Moodle
-
-### Installation Rapide
-
-```bash
-# Cloner le dépôt
-git clone https://github.com/your-username/moodle-mcp-server.git
-cd moodle-mcp-server
-
-# Installer les dépendances
-npm install
-
-# Compiler
-npm run build
+```
+┌─────────────────────┐         ┌──────────────────────┐
+│  Claude Desktop     │         │   Serveur MCP        │
+│  (Client Windows/   │  ncat   │   (Ubuntu/Linux)     │
+│   Linux)            ├────────►│                      │
+│                     │  TCP    │   socat :3000        │
+│  IP: 192.168.1.X    │  :3000  │   ↓                  │
+└─────────────────────┘         │   node build/index.js│
+                                │   ↓                  │
+                                │   Moodle API         │
+                                │   formation.ec2lt.sn │
+                                └──────────────────────┘
 ```
 
-### Installation avec le Script Automatique
+## 📋 Prérequis
 
+### Sur le Serveur (hébergeant le MCP)
+- Node.js 18.x ou supérieur
+- npm 8.x ou supérieur
+- socat (pour le mode réseau)
+- Accès à une instance Moodle avec API activée
+
+### Sur le Client (utilisant Claude Desktop)
+- Claude Desktop installé
+- **Windows** : Nmap (inclut ncat)
+- **Linux/Ubuntu** : nmap (inclut ncat et nc)
+
+## 🔧 Installation Rapide
+
+### 1. Clone du dépôt
 ```bash
-# Rendre le script exécutable
-chmod +x install-moodle-extended.sh
-
-# Lancer l'installation
-./install-moodle-extended.sh
+git clone https://github.com/Sergio-Oracle/mcp-servers.git
+cd mcp-servers/moodle-mcp-server
 ```
 
-### Configuration
-
-Créez un fichier `.env` avec :
-
-```env
+### 2. Configuration
+```bash
+# Créer le fichier .env
+cat > .env << EOF
 MOODLE_API_URL=https://votre-moodle.com/webservice/rest/server.php
-MOODLE_API_TOKEN=votre_token_api
-MOODLE_COURSE_ID=123
+MOODLE_API_TOKEN=votre_token_api_ici
+MOODLE_COURSE_ID=2
+EOF
 ```
 
-## 💻 Configuration avec Claude Desktop
-
-### Linux
-
-Fichier : `~/.config/Claude/claude_desktop_config.json`
-
-```json
-{
-  "mcpServers": {
-    "moodle-server": {
-      "command": "node",
-      "args": [
-        "/home/serge/mcp-servers/moodle-mcp-server/build/index.js"
-      ],
-      "env": {
-        "MOODLE_API_URL": "https://formation.ec2lt.sn/webservice/rest/server.php",
-        "MOODLE_API_TOKEN": "votre_token",
-        "MOODLE_COURSE_ID": "400"
-      }
-    }
-  }
-}
+### 3. Installation et Compilation
+```bash
+npm install
+npm run build
 ```
 
-### macOS
+### 4. Démarrage
 
-Fichier : `~/Library/Application Support/Claude/claude_desktop_config.json`
-
-```json
-{
-  "mcpServers": {
-    "moodle-server": {
-      "command": "/usr/local/bin/node",
-      "args": [
-        "/path/to/moodle-mcp-server/build/index.js"
-      ],
-      "env": {
-        "MOODLE_API_URL": "https://votre-moodle.com/webservice/rest/server.php",
-        "MOODLE_API_TOKEN": "votre_token",
-        "MOODLE_COURSE_ID": "123"
-      }
-    }
-  }
-}
+#### Mode Local (stdio)
+```bash
+node build/index.js
 ```
 
-### Windows
+#### Mode Réseau (TCP sur port 3000)
+```bash
+# Installer socat
+sudo apt install socat
 
+# Lancer le serveur
+./start-moodle-mcp.sh
+```
+
+### 5. Configuration Claude Desktop
+
+#### Sur Windows
 Fichier : `%APPDATA%\Claude\claude_desktop_config.json`
-
 ```json
 {
   "mcpServers": {
-    "moodle-server": {
-      "command": "C:\\Program Files\\nodejs\\node.exe",
-      "args": [
-        "C:\\path\\to\\moodle-mcp-server\\build\\index.js"
-      ],
-      "env": {
-        "MOODLE_API_URL": "https://votre-moodle.com/webservice/rest/server.php",
-        "MOODLE_API_TOKEN": "votre_token",
-        "MOODLE_COURSE_ID": "123"
-      }
+    "moodle": {
+      "command": "ncat",
+      "args": ["192.168.1.181", "3000"]
     }
   }
 }
 ```
 
-## 📖 Exemples d'Utilisation
-
-### Exemple 1 : Lister tous les fichiers PDF du cours
-
-```
-Claude, utilise le serveur Moodle pour :
-1. Lister tous les fichiers PDF disponibles dans le cours
-2. Me montrer ceux qui contiennent "examen" dans leur nom
-```
-
-### Exemple 2 : Correction automatique d'un examen
-
-```
-Claude, voici le processus de correction :
-1. Récupère toutes les soumissions du devoir ID 142
-2. Pour chaque étudiant, télécharge sa copie
-3. Analyse les réponses selon le barème suivant : [...]
-4. Fournis les notes et feedbacks à tous les étudiants
-5. Génère un rapport de notes en format Markdown
+#### Sur Ubuntu/Linux
+Fichier : `~/.config/Claude/claude_desktop_config.json`
+```json
+{
+  "mcpServers": {
+    "moodle": {
+      "command": "ncat",
+      "args": ["192.168.1.181", "3000"]
+    }
+  }
+}
 ```
 
-### Exemple 3 : Explorer le contenu du cours
+**⚠️ Important :** Remplacez `192.168.1.181` par l'IP réelle de votre serveur.
 
+## 📚 Documentation
+
+- **[INSTALLATION-GUIDE.md](INSTALLATION-GUIDE.md)** - Guide d'installation complet (local et réseau)
+- **[Guide-des-Outils-Moodel-mcp.md](Guide-des-Outils-Moodel-mcp.md)** - Documentation de tous les outils disponibles
+- **[Start-here.md](Start-here.md)** - Guide de démarrage rapide
+- **[Exemple-correction-auto.md](Exemple-correction-auto.md)** - Exemples de correction automatique
+
+## 🛠️ Outils Disponibles (21 outils)
+
+### Cours et Catégories
+- `get_categories` - Liste des catégories de cours
+- `get_courses_in_category` - Cours d'une catégorie
+- `get_all_courses` - Tous les cours accessibles
+- `get_course_details` - Détails d'un cours
+- `get_course_contents` - Contenu complet d'un cours
+- `get_course_modules` - Modules d'un cours
+- `get_section_contents` - Contenu d'une section
+- `get_module_details` - Détails d'un module
+
+### Étudiants et Évaluations
+- `get_students` - Liste des étudiants
+- `get_assignments` - Liste des devoirs
+- `get_submissions` - Soumissions de devoirs
+- `get_submission_content` - Contenu d'une soumission
+- `provide_feedback` - Donner un feedback
+- `batch_provide_feedback` - Feedbacks en masse
+
+### Quiz
+- `get_quizzes` - Liste des quiz
+- `get_quiz_grade` - Note d'un quiz
+
+### Fichiers
+- `get_course_files` - Liste des fichiers
+- `search_files` - Recherche de fichiers
+- `download_file` - Téléchargement de fichier
+
+### Correction Automatique
+- `get_all_submissions_with_files` - Toutes les soumissions avec fichiers
+- `generate_grades_report` - Génération de rapports
+
+## 💡 Exemples d'Utilisation
+
+### Lister tous les cours
 ```
-Claude :
-1. Montre-moi toutes les sections du cours
-2. Liste les modules de la section 3
-3. Affiche les fichiers disponibles dans cette section
+Claude, liste tous mes cours Moodle
 ```
 
-### Exemple 4 : Télécharger un document
-
+### Correction automatique d'un devoir
 ```
-Claude, trouve le fichier "sujet_examen_final.pdf" dans le cours 
-et télécharge-le pour que je puisse l'analyser.
+Claude, récupère toutes les soumissions du devoir ID 10,
+corrige-les automatiquement et génère un rapport de notes
 ```
 
-## 🔧 Développement
+### Rechercher des fichiers
+```
+Claude, trouve tous les fichiers PDF contenant "examen" dans le cours
+```
 
-### Mode Watch (auto-rebuild)
+### Générer un rapport de notes
+```
+Claude, génère un rapport CSV des notes pour le cours 15
+```
+
+## 🧪 Tests
 
 ```bash
-npm run watch
-```
-
-### Débogage avec MCP Inspector
-
-```bash
+# Tester avec l'inspector MCP
 npm run inspector
-```
 
-L'Inspector fournit une URL pour accéder aux outils de débogage dans votre navigateur.
-
-### Tests
-
-```bash
-# Vérifier la compilation
+# Tester la compilation
 npm run build
 
-# Tester avec l'Inspector
-npm run inspector
-
-# Démarrer le serveur manuellement
-npm start
-```
-
-## 🔑 Obtenir un Token API Moodle
-
-1. Connectez-vous à votre site Moodle en tant qu'administrateur
-2. Allez dans **Administration du site > Plugins > Services web > Gérer les jetons**
-3. Créez un nouveau jeton avec les permissions nécessaires :
-   - `core_enrol_get_enrolled_users`
-   - `core_course_get_contents`
-   - `mod_assign_get_assignments`
-   - `mod_assign_get_submissions`
-   - `mod_assign_get_submission_status`
-   - `mod_assign_save_grade`
-   - `mod_assign_get_grades`
-   - `mod_quiz_get_quizzes_by_courses`
-   - `mod_quiz_get_user_best_grade`
-4. Copiez le jeton généré dans votre fichier `.env`
-
-## 🔒 Sécurité
-
-- Ne partagez jamais votre fichier `.env` ou votre token API Moodle
-- Assurez-vous que le serveur MCP n'a accès qu'aux cours nécessaires
-- Utilisez un token avec les permissions minimales requises
-- Vérifiez régulièrement les logs pour détecter toute activité suspecte
-
-## 📊 Architecture
-
-```
-moodle-mcp-server/
-├── src/
-│   └── index.ts          # Code source principal (étendu)
-├── build/                # Code compilé
-├── node_modules/         # Dépendances
-├── package.json          # Configuration npm
-├── tsconfig.json         # Configuration TypeScript
-├── .env                  # Variables d'environnement (à créer)
-└── README.md            # Documentation
-```
-
-## 🐛 Résolution de Problèmes
-
-### Le serveur ne démarre pas
-
-```bash
-# Vérifier les variables d'environnement
-echo $MOODLE_API_URL
-echo $MOODLE_API_TOKEN
-echo $MOODLE_COURSE_ID
-
-# Recompiler
-npm run build
-
-# Vérifier les logs
-journalctl -f
-```
-
-### Erreur d'authentification API
-
-- Vérifiez que votre token est valide
-- Assurez-vous que le token a les permissions nécessaires
-- Testez l'URL API avec curl :
-
-```bash
+# Vérifier la connexion Moodle API
 curl "https://votre-moodle.com/webservice/rest/server.php?wstoken=VOTRE_TOKEN&wsfunction=core_webservice_get_site_info&moodlewsrestformat=json"
 ```
 
-### Les fichiers ne se téléchargent pas
+## 🐛 Dépannage
 
-- Vérifiez que l'URL du fichier contient le token
-- Assurez-vous que le fichier est visible pour l'utilisateur associé au token
-- Vérifiez les permissions du module/ressource dans Moodle
+### Le serveur ne démarre pas
+```bash
+# Vérifier que Node.js est installé
+node --version
 
-### Claude ne voit pas les nouveaux outils
+# Vérifier la compilation
+ls -l build/index.js
 
-1. Redémarrez complètement Claude Desktop
-2. Vérifiez le fichier de configuration JSON
-3. Vérifiez que le serveur est bien compilé (`build/index.js` existe)
-4. Testez avec l'Inspector : `npm run inspector`
+# Vérifier les dépendances
+npm install
+```
 
-## 📝 Changelog
+### Connexion réseau impossible
+```bash
+# Vérifier que socat écoute sur le port 3000
+sudo netstat -tlnp | grep 3000
 
-### Version 0.2.0 (2024)
+# Tester la connexion depuis le client
+ncat 192.168.1.181 3000
 
-**Nouvelles fonctionnalités :**
-- ✅ Gestion complète du contenu du cours
-- ✅ Téléchargement de fichiers depuis Moodle
-- ✅ Recherche de fichiers
-- ✅ Correction automatique en batch
-- ✅ Génération de rapports de notes (JSON/CSV/Markdown)
-- ✅ Récupération de toutes les soumissions avec fichiers
+# Vérifier le pare-feu
+sudo ufw allow 3000/tcp
+```
 
-**Améliorations :**
-- Meilleure gestion des erreurs
-- Documentation étendue
-- Exemples d'utilisation détaillés
-- Script d'installation automatique
+### "Unknown tool" dans Claude Desktop
+1. Vérifier la configuration JSON
+2. Redémarrer complètement Claude Desktop
+3. Vérifier que ncat/nc est installé et dans le PATH
 
-### Version 0.1.0 (Initial)
+## 🔒 Sécurité
 
-- Gestion basique des étudiants
-- Gestion des devoirs et soumissions
-- Gestion des quiz
-- Feedback individuel
+### Recommandations
+- Utilisez un token API Moodle avec permissions limitées
+- Limitez l'accès au port 3000 par IP (pare-feu)
+- Utilisez un VPN pour l'accès distant
+- Ne partagez jamais votre token API publiquement
+- Conservez le fichier `.env` hors du contrôle de version
+
+### Configuration du pare-feu
+```bash
+# Ubuntu/UFW - Autoriser uniquement le sous-réseau local
+sudo ufw allow from 192.168.1.0/24 to any port 3000
+
+# CentOS/firewalld
+sudo firewall-cmd --permanent --add-port=3000/tcp
+sudo firewall-cmd --reload
+```
 
 ## 🤝 Contribution
 
-Les contributions sont les bienvenues ! N'hésitez pas à :
+Les contributions sont les bienvenues ! Pour contribuer :
 
 1. Fork le projet
-2. Créer une branche feature (`git checkout -b feature/AmazingFeature`)
-3. Commit vos changements (`git commit -m 'Add some AmazingFeature'`)
+2. Créez une branche pour votre fonctionnalité (`git checkout -b feature/AmazingFeature`)
+3. Committez vos changements (`git commit -m 'Add some AmazingFeature'`)
 4. Push vers la branche (`git push origin feature/AmazingFeature`)
-5. Ouvrir une Pull Request
+5. Ouvrez une Pull Request
 
-## 📄 Licence
+## 📝 License
 
-[MIT](LICENSE)
+Ce projet est sous licence MIT. Voir le fichier [LICENSE](LICENSE) pour plus de détails.
 
-## 👨‍💻 Auteurs
+## 👨‍💻 Auteur
 
-- Version initiale : [Votre nom]
-- Version étendue : Développée avec l'assistance de Claude (Anthropic)
+**Serge (RTN)**
+- EC2LT (École Centrale des Logiciels Libres et de Télécommunications)
+- Email: contact@ec2lt.sn
+- GitHub: [@Sergio-Oracle](https://github.com/Sergio-Oracle)
 
 ## 🙏 Remerciements
 
-- Anthropic pour le SDK MCP
-- La communauté Moodle pour l'API Web Services
-- Tous les contributeurs
+- [Anthropic](https://www.anthropic.com/) pour Claude et le protocole MCP
+- [Moodle](https://moodle.org/) pour leur excellent LMS
+- La communauté open source
 
-## 📞 Support
+## 📊 Statistiques
 
-Pour toute question ou problème :
+- **21 outils MCP** disponibles
+- Support complet de l'API Moodle
+- Correction automatique assistée par IA
+- Mode réseau pour déploiement multi-machines
+- Rapports en CSV, JSON, et Markdown
 
-- Ouvrez une issue sur GitHub
-- Consultez la documentation Moodle : https://docs.moodle.org/
-- Documentation MCP : https://modelcontextprotocol.io/
+## 🔗 Liens Utiles
+
+- [Documentation MCP](https://modelcontextprotocol.io/)
+- [API Moodle](https://docs.moodle.org/dev/Web_services)
+- [Claude Desktop](https://claude.ai/download)
+- [Node.js](https://nodejs.org/)
+- [Nmap (pour ncat)](https://nmap.org/)
 
 ---
 
-**Note :** Ce serveur nécessite une instance Moodle avec les Web Services activés et un token API valide. Assurez-vous d'avoir les permissions appropriées avant utilisation.
+**Version** : 0.3.0  
+**Dernière mise à jour** : Décembre 2024  
+**Status** : Production Ready ✅

@@ -578,5 +578,5 @@ backend mcp_backend
 ---
 
 **Version** : 0.4.0  
-**Dernière mise à jour** : Décembre 2024  
+**Dernière mise à jour** : Décembre 2025  
 **Auteur** : Serge (RTN)
